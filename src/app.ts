@@ -1,6 +1,7 @@
 /* eslint-disable no-param-reassign */
 import "../style.css";
 import Ball from "./ball";
+import { random } from "./utils";
 
 const GRAVITY = 0.3;
 
@@ -17,6 +18,9 @@ class App {
     [index: number]: Ball;
   };
   ballIdx: number;
+  center: { x: number; y: number };
+  mouseX: number;
+  mouseY: number;
   constructor() {
     this.canvas = document.createElement("canvas");
     this.reflectionCanvas = document.createElement("canvas");
@@ -29,16 +33,24 @@ class App {
       .appendChild(this.reflectionCanvas);
     this.ballIdx = 0;
     this.pixelRatio = 1;
+
     this.balls = {};
     this.resize();
+    this.mouseX = 400;
+    this.mouseY = 300;
     const interval = setInterval(this.makeBall.bind(this), 10);
-    // this.makeBall();
     window.addEventListener("resize", this.resize.bind(this));
     window.requestAnimationFrame(this.animate.bind(this));
+    window.addEventListener("mousemove", this.mouseMove.bind(this));
+  }
+
+  mouseMove(e: MouseEvent) {
+    this.mouseX = e.clientX;
+    this.mouseY = e.clientY;
   }
 
   makeBall() {
-    const newBall = new Ball({ x: 500, y: 300 }, this.ballIdx);
+    const newBall = new Ball({ x: this.mouseX, y: this.mouseY }, this.ballIdx);
     this.balls[this.ballIdx] = newBall;
     this.ballIdx += 1;
   }
@@ -55,13 +67,13 @@ class App {
   floorCollide(ball: Ball) {
     if (ball.center.y + ball.radius > this.canvas.height) {
       ball.center.y = this.canvas.height - ball.radius;
-      ball.vy /= -1.5;
+      ball.vy /= -random(1, 2);
     }
   }
 
   gravity(ball: Ball) {
     ball.vy += GRAVITY;
-    ball.vx *= 0.985;
+    ball.vx *= 0.99;
     ball.center.x += ball.vx;
     ball.center.y += ball.vy;
     ball.radius += ball.radiusIncreasement;
